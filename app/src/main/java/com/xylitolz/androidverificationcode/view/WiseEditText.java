@@ -4,9 +4,11 @@ import android.content.Context;
 import android.support.v7.widget.AppCompatEditText;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputConnectionWrapper;
+import android.view.inputmethod.InputMethodManager;
 
 /**
  * @author 小米Xylitol
@@ -46,7 +48,7 @@ public class WiseEditText extends AppCompatEditText {
         @Override
         public boolean sendKeyEvent(KeyEvent event) {
             if (keyListener != null) {
-                keyListener.onKey(WiseEditText.this,event.getKeyCode(),event);
+                keyListener.onKey(WiseEditText.this, event.getKeyCode(), event);
             }
             return super.sendKeyEvent(event);
         }
@@ -66,8 +68,23 @@ public class WiseEditText extends AppCompatEditText {
     }
 
     //设置监听回调
-    public void setSoftKeyListener(OnKeyListener listener){
+    public void setSoftKeyListener(OnKeyListener listener) {
         keyListener = listener;
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            showSoft();
+        }
+        return true;
+    }
+
+    public void showSoft() {
+        setFocusableInTouchMode(true);
+        requestFocus();
+        InputMethodManager inputMethodManager = (InputMethodManager) getContext().getApplicationContext()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.showSoftInput(this, 0);
+    }
 }

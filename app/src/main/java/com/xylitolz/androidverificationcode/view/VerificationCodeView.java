@@ -10,9 +10,11 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -55,38 +57,39 @@ public class VerificationCodeView extends RelativeLayout {
     private int currentFocusPosition = 0;
 
     public VerificationCodeView(Context context) {
-        this(context,null);
+        this(context, null);
     }
 
     public VerificationCodeView(Context context, AttributeSet attrs) {
-        this(context, attrs,0);
+        this(context, attrs, 0);
     }
 
     public VerificationCodeView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context,attrs,defStyleAttr);
+        init(context, attrs, defStyleAttr);
     }
 
     /**
      * 初始化View
+     *
      * @param context
      * @param attrs
      * @param defStyleAttr
      */
     private void init(Context context, AttributeSet attrs, int defStyleAttr) {
-        TypedArray array = context.obtainStyledAttributes(attrs,R.styleable.VerificationCodeView,defStyleAttr,0);
-        codeNum = array.getInteger(R.styleable.VerificationCodeView_vcv_code_number,4);
-        codeWidth = array.getDimensionPixelSize(R.styleable.VerificationCodeView_vcv_code_width, (int) dip2px(50,context));
-        textColor = array.getColor(R.styleable.VerificationCodeView_vcv_code_color,getResources().getColor(R.color.text_border_focused));
-        textSize = array.getDimensionPixelSize(R.styleable.VerificationCodeView_vcv_code_size,getResources().getDimensionPixelOffset(R.dimen.text_size));
+        TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.VerificationCodeView, defStyleAttr, 0);
+        codeNum = array.getInteger(R.styleable.VerificationCodeView_vcv_code_number, 4);
+        codeWidth = array.getDimensionPixelSize(R.styleable.VerificationCodeView_vcv_code_width, (int) dip2px(50, context));
+        textColor = array.getColor(R.styleable.VerificationCodeView_vcv_code_color, getResources().getColor(R.color.text_border_focused));
+        textSize = array.getDimensionPixelSize(R.styleable.VerificationCodeView_vcv_code_size, getResources().getDimensionPixelOffset(R.dimen.text_size));
         textDrawable = array.getDrawable(R.styleable.VerificationCodeView_vcv_code_bg_normal);
         textFocusedDrawable = array.getDrawable(R.styleable.VerificationCodeView_vcv_code_bg_focus);
         array.recycle();
         //若未设置选中和未选中状态，设置默认
-        if(textDrawable == null) {
+        if (textDrawable == null) {
             textDrawable = getResources().getDrawable(R.drawable.bg_text_normal);
         }
-        if(textFocusedDrawable == null) {
+        if (textFocusedDrawable == null) {
             textFocusedDrawable = getResources().getDrawable(R.drawable.bg_text_focused);
         }
 
@@ -101,7 +104,7 @@ public class VerificationCodeView extends RelativeLayout {
     private void initView(Context context) {
         //初始化TextView数组
         textViews = new TextView[codeNum];
-        for (int i = 0;i < codeNum;i++) {
+        for (int i = 0; i < codeNum; i++) {
             //循环加入数组中，设置TextView字体大小和颜色，并将TextView依次加入LinearLayout
             TextView textView = new TextView(context);
             textView.setWidth((int) codeWidth);
@@ -141,8 +144,8 @@ public class VerificationCodeView extends RelativeLayout {
             @Override
             public void afterTextChanged(Editable s) {
                 String content = s.toString();
-                if(!TextUtils.isEmpty(content)) {
-                    if(content.length() == 1) {
+                if (!TextUtils.isEmpty(content)) {
+                    if (content.length() == 1) {
                         setText(content);
                     }
                     editText.setText("");
@@ -154,7 +157,8 @@ public class VerificationCodeView extends RelativeLayout {
         onKeyListener = new OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if(keyCode == KeyEvent.KEYCODE_DEL && event.getAction() == KeyEvent.ACTION_DOWN) {
+                Log.e("CodeView", "keyCode " + keyCode);
+                if (keyCode == KeyEvent.KEYCODE_DEL && event.getAction() == KeyEvent.ACTION_DOWN) {
                     deleteCode();
                     return true;
                 }
@@ -164,20 +168,29 @@ public class VerificationCodeView extends RelativeLayout {
         editText.setSoftKeyListener(onKeyListener);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            float x = event.getX();
+
+        }
+        return super.onTouchEvent(event);
+    }
+
     /**
      * 重设EditText的光标位置，以及选中TextView的边框颜色
      */
     private void resetCursorPosition() {
-        for(int i = 0;i < codeNum;i++) {
+        for (int i = 0; i < codeNum; i++) {
             TextView textView = textViews[i];
-            if(i == currentFocusPosition) {
+            if (i == currentFocusPosition) {
                 textView.setBackgroundDrawable(textFocusedDrawable);
             } else {
                 textView.setBackgroundDrawable(textDrawable);
             }
         }
-        if(codeNum > 1) {
-            if(currentFocusPosition < codeNum) {
+        if (codeNum > 1) {
+            if (currentFocusPosition < codeNum) {
                 //字数小于总数，设置EditText的leftPadding，造成光标移动的错觉
                 editText.setCursorVisible(true);
                 float leftPadding = codeWidth / 2 + currentFocusPosition * codeWidth + currentFocusPosition * dividerWidth;
@@ -193,7 +206,7 @@ public class VerificationCodeView extends RelativeLayout {
      * 删除键按下
      */
     private void deleteCode() {
-        if(currentFocusPosition == 0) {
+        if (currentFocusPosition == 0) {
             //当前光标位置在0，直接返回
             return;
         } else {
@@ -210,10 +223,10 @@ public class VerificationCodeView extends RelativeLayout {
     private void layoutTextView() {
         //获取控件剩余宽度
         float availableWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
-        if(codeNum > 1) {
+        if (codeNum > 1) {
             //计算每个Code之间的间距
             dividerWidth = (availableWidth - codeWidth * codeNum) / (codeNum - 1);
-            for(int i = 1;i < codeNum;i++) {
+            for (int i = 1; i < codeNum; i++) {
                 float leftMargin = codeWidth * i + dividerWidth * i;
                 RelativeLayout.LayoutParams params1 = (RelativeLayout.LayoutParams) textViews[i].getLayoutParams();
                 params1.leftMargin = (int) leftMargin;
@@ -230,10 +243,11 @@ public class VerificationCodeView extends RelativeLayout {
 
     /**
      * 拦截到EditText输入字符，发送给该方法进行处理
+     *
      * @param s
      */
     private void setText(String s) {
-        if(currentFocusPosition >= codeNum) {
+        if (currentFocusPosition >= codeNum) {
             //光标已经隐藏，直接返回
             return;
         }
@@ -241,16 +255,6 @@ public class VerificationCodeView extends RelativeLayout {
         textViews[currentFocusPosition].setText(s);
         currentFocusPosition++;
         resetCursorPosition();
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        if (heightMode == MeasureSpec.AT_MOST) {
-            //若高度是wrap_content，则设置为50dp
-            heightMeasureSpec = MeasureSpec.makeMeasureSpec((int) dip2px(80, getContext()), MeasureSpec.EXACTLY);
-        }
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -267,6 +271,7 @@ public class VerificationCodeView extends RelativeLayout {
 
     /**
      * 暴露公共方法，设置光标颜色
+     *
      * @param drawableRes
      */
     public void setCursorRes(@DrawableRes int drawableRes) {
@@ -280,11 +285,12 @@ public class VerificationCodeView extends RelativeLayout {
 
     /**
      * 获取输入的验证码
+     *
      * @return
      */
     public String getContent() {
         StringBuilder builder = new StringBuilder();
-        for(TextView tv : textViews) {
+        for (TextView tv : textViews) {
             builder.append(tv.getText());
         }
         return builder.toString();
@@ -292,11 +298,12 @@ public class VerificationCodeView extends RelativeLayout {
 
     /**
      * 判断是否验证码输入完毕
+     *
      * @return
      */
     public boolean isFinish() {
-        for(TextView tv : textViews) {
-            if(TextUtils.isEmpty(tv.getText())) {
+        for (TextView tv : textViews) {
+            if (TextUtils.isEmpty(tv.getText())) {
                 return false;
             }
         }
@@ -307,7 +314,7 @@ public class VerificationCodeView extends RelativeLayout {
      * 清除已输入验证码
      */
     public void clear() {
-        for(TextView tv : textViews) {
+        for (TextView tv : textViews) {
             tv.setText("");
         }
         currentFocusPosition = 0;

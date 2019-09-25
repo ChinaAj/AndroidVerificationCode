@@ -8,10 +8,11 @@ import android.widget.Toast;
 
 import com.xylitolz.androidverificationcode.view.VerificationCodeView;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private VerificationCodeView viewVerification;
     private Button btnSubmit;
     private Button btnClear;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,11 +30,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_submit:
-                if(viewVerification.isFinish()) {
-                    Toast.makeText(this,"输入验证码是:"+viewVerification.getContent(),Toast.LENGTH_SHORT).show();
+                if (viewVerification.isFinish()) {
+                    Toast.makeText(this, "输入验证码是:" + viewVerification.getContent(), Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(this,"请输入完整验证码",Toast.LENGTH_SHORT).show();
-                } 
+                    Toast.makeText(this, "请输入完整验证码", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.btn_clear:
                 viewVerification.clear();
